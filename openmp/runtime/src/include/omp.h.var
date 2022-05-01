@@ -137,6 +137,10 @@
     extern int  __KAI_KMPC_CONVENTION  omp_get_team_num (void);
     extern int  __KAI_KMPC_CONVENTION  omp_get_cancellation (void);
 
+    extern int  __KAI_KMPC_CONVENTION   omp_get_devices_in_order (int, int *);
+
+
+
     /* OpenMP 4.5 */
     extern int   __KAI_KMPC_CONVENTION  omp_get_initial_device (void);
     extern void* __KAI_KMPC_CONVENTION  omp_target_alloc(size_t, int);

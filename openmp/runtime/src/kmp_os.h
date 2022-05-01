@@ -81,6 +81,10 @@
 #define KMP_GROUP_AFFINITY 0
 #endif
 
+#ifndef KMP_USE_NUMA_DEVICE_AFFINITY
+#define KMP_USE_NUMA_DEVICE_AFFINITY 0
+#endif // KMP_USE_NUMA_DEVICE_AFFINITY
+
 /* Check for quad-precision extension. */
 #define KMP_HAVE_QUAD 0
 #if KMP_ARCH_X86 || KMP_ARCH_X86_64

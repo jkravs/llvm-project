@@ -299,6 +299,12 @@
             integer (kind=omp_integer_kind) device_num
           end subroutine omp_set_default_device
 
+          subroutine omp_get_devices_in_order(n_desired, dev_ids)
+            use omp_lib_kinds
+            integer (kind=omp_integer_kind) n_desired
+            integer (kind=omp_integer_kind) dev_ids(*)
+          end subroutine omp_get_devices_in_order
+
           function omp_get_num_devices()
             use omp_lib_kinds
             integer (kind=omp_integer_kind) omp_get_num_devices
@@ -705,6 +711,7 @@
 !dec$ attributes alias:'OMP_GET_WTICK' :: omp_get_wtick
 !dec$ attributes alias:'OMP_GET_DEFAULT_DEVICE' :: omp_get_default_device
 !dec$ attributes alias:'OMP_SET_DEFAULT_DEVICE' :: omp_set_default_device
+!dec$ attributes alias:'OMP_GET_DEVICES_IN_ORDER' :: omp_get_devices_in_order
 !dec$ attributes alias:'OMP_GET_NUM_DEVICES' :: omp_get_num_devices
 !dec$ attributes alias:'OMP_GET_NUM_TEAMS' :: omp_get_num_teams
 !dec$ attributes alias:'OMP_GET_TEAM_NUM' :: omp_get_team_num
@@ -797,6 +804,7 @@
 !dec$ attributes alias:'_OMP_GET_WTICK' :: omp_get_wtick
 !dec$ attributes alias:'_OMP_GET_DEFAULT_DEVICE' :: omp_get_default_device
 !dec$ attributes alias:'_OMP_SET_DEFAULT_DEVICE' :: omp_set_default_device
+!dec$ attributes alias:'_OMP_GET_DEVICES_IN_ORDER' :: omp_get_devices_in_order
 !dec$ attributes alias:'_OMP_GET_NUM_DEVICES' :: omp_get_num_devices
 !dec$ attributes alias:'_OMP_GET_NUM_TEAMS' :: omp_get_num_teams
 !dec$ attributes alias:'_OMP_GET_TEAM_NUM' :: omp_get_team_num
@@ -892,6 +900,7 @@
 !dec$ attributes alias:'omp_get_wtick_'::omp_get_wtick
 !dec$ attributes alias:'omp_get_default_device_'::omp_get_default_device
 !dec$ attributes alias:'omp_set_default_device_'::omp_set_default_device
+!dec$ attributes alias:'omp_get_devices_in_order_'::omp_get_devices_in_order
 !dec$ attributes alias:'omp_get_num_devices_'::omp_get_num_devices
 !dec$ attributes alias:'omp_get_num_teams_'::omp_get_num_teams
 !dec$ attributes alias:'omp_get_team_num_'::omp_get_team_num
@@ -986,6 +995,7 @@
 !dec$ attributes alias:'_omp_get_wtick_'::omp_get_wtick
 !dec$ attributes alias:'_omp_get_default_device_'::omp_get_default_device
 !dec$ attributes alias:'_omp_set_default_device_'::omp_set_default_device
+!dec$ attributes alias:'_omp_get_devices_in_order_'::omp_get_devices_in_order
 !dec$ attributes alias:'_omp_get_num_devices_'::omp_get_num_devices
 !dec$ attributes alias:'_omp_get_num_teams_'::omp_get_num_teams
 !dec$ attributes alias:'_omp_get_team_num_'::omp_get_team_num

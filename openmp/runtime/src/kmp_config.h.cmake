@@ -71,6 +71,9 @@
 #cmakedefine01 MSVC
 #define KMP_MSVC_COMPAT MSVC
 
+#cmakedefine01 LIBOMP_USE_NUMA_DEVICE_AFFINITY
+#define KMP_USE_NUMA_DEVICE_AFFINITY LIBOMP_USE_NUMA_DEVICE_AFFINITY
+
 // Configured cache line based on architecture
 #if KMP_ARCH_PPC64
 # define CACHE_LINE 128

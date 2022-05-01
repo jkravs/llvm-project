@@ -99,6 +99,10 @@
 #define FTN_SET_DEFAULT_DEVICE omp_set_default_device
 #define FTN_IS_INITIAL_DEVICE omp_is_initial_device
 
+#if KMP_USE_NUMA_DEVICE_AFFINITY
+#define FTN_GET_DEVICES_IN_ORDER omp_get_devices_in_order
+#endif // KMP_USE_NUMA_DEVICE_AFFINITY
+
 #define FTN_GET_CANCELLATION omp_get_cancellation
 #define FTN_GET_CANCELLATION_STATUS kmp_get_cancellation_status
 
@@ -220,6 +224,11 @@
 #define FTN_GET_DEFAULT_DEVICE omp_get_default_device_
 #define FTN_SET_DEFAULT_DEVICE omp_set_default_device_
 #define FTN_IS_INITIAL_DEVICE omp_is_initial_device_
+
+
+#if KMP_USE_NUMA_DEVICE_AFFINITY
+#define FTN_GET_DEVICES_IN_ORDER omp_get_devices_in_order_
+#endif // KMP_USE_NUMA_DEVICE_AFFINITY
 
 #define FTN_GET_CANCELLATION omp_get_cancellation_
 #define FTN_GET_CANCELLATION_STATUS kmp_get_cancellation_status_
@@ -382,6 +391,10 @@
 #define FTN_DISPLAY_ENV OMP_DISPLAY_ENV
 #define FTN_FULFILL_EVENT OMP_FULFILL_EVENT
 
+#if KMP_USE_NUMA_DEVICE_AFFINITY
+#define FTN_GET_DEVICES_IN_ORDER OMP_GET_DEVICES_IN_ORDER
+#endif
+
 #endif /* KMP_FTN_UPPER */
 
 /* ------------------------------------------------------------------------ */
@@ -505,6 +518,10 @@
 #define FTN_GET_SUPPORTED_ACTIVE_LEVELS OMP_GET_SUPPORTED_ACTIVE_LEVELS_
 #define FTN_DISPLAY_ENV OMP_DISPLAY_ENV_
 #define FTN_FULFILL_EVENT OMP_FULFILL_EVENT_
+
+#if KMP_USE_NUMA_DEVICE_AFFINITY
+#define FTN_GET_DEVICES_IN_ORDER OMP_GET_DEVICES_IN_ORDER_
+#endif
 
 #endif /* KMP_FTN_UAPPEND */
 
