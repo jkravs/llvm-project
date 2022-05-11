@@ -937,17 +937,23 @@ void FTN_STDCALL KMP_EXPAND_NAME(FTN_SET_DEFAULT_DEVICE)(int KMP_DEREF arg) {
 #endif
 }
 
-#if KMP_USE_NUMA_DEVICE_AFFINITY
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+#include <stdio.h>
 int FTN_STDCALL FTN_GET_DEVICES_IN_ORDER(int, int *) KMP_WEAK_ATTRIBUTE_EXTERNAL;
 int FTN_STDCALL FTN_GET_DEVICES_IN_ORDER(int n_desired, int *dev_ids) {
 #if KMP_MIC || KMP_OS_DARWIN || defined(KMP_STUB)
-    return 0;
+  return 0;
 #else
-    // For the moment
+  int (*fptr)(int, int *);
+  if ((*(void **)(&fptr) = dlsym(RTLD_NEXT, "omp_get_devices_in_order"))) {
+    return (*fptr)(n_desired, dev_ids);
+  } else {
+    printf("Failed\n");
     return 0;
+  }
 #endif
 }
-#endif // KMP_USE_NUMA_DEVICE_AFFINITY
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 
 // Get number of NON-HOST devices.
 // libomptarget, if loaded, provides this function in api.cpp.
