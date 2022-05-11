@@ -54,10 +54,15 @@ if(LIBOMPTARGET_ENABLE_DEBUG)
   add_definitions(-DOMPTARGET_DEBUG)
 endif()
 
+if (LIBOMP_USE_NUMA_DEVICE_AFFINITY)
+  add_definitions(-DOMPT_USE_NUMA_DEVICE_AFFINITY)
+endif()
+
 include_directories(include)
 
 # Build target agnostic offloading library.
 add_subdirectory(src)
+
 
 # Retrieve the path to the resulting library so that it can be used for 
 # testing.

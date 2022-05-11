@@ -14,6 +14,10 @@
 #define _OMPTARGET_RTL_H
 
 #include "omptarget.h"
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+#include "omptargetnuma.h"
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
+
 #include <list>
 #include <map>
 #include <mutex>
@@ -54,6 +58,11 @@ struct RTLInfoTy {
   typedef int64_t(init_requires_ty)(int64_t);
   typedef int64_t(synchronize_ty)(int64_t, __tgt_async_info *);
 
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+  typedef int32_t(numa_devices_in_order_ty)(int32_t, int32_t const **);
+  typedef int32_t(init_numa_device_table_ty)(__tgt_numa_info const *);
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
+
   int32_t Idx = -1;             // RTL index, index is the number of devices
                                 // of other RTLs that were registered before,
                                 // i.e. the OpenMP index of the first device
@@ -86,6 +95,11 @@ struct RTLInfoTy {
   run_team_region_async_ty *run_team_region_async = nullptr;
   init_requires_ty *init_requires = nullptr;
   synchronize_ty *synchronize = nullptr;
+
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+  numa_devices_in_order_ty *numa_devices_in_order = nullptr;
+  init_numa_device_table_ty *init_numa_device_table = nullptr;
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 
   // Are there images associated with this RTL.
   bool isUsed = false;
@@ -126,6 +140,11 @@ struct RTLInfoTy {
     init_requires = r.init_requires;
     isUsed = r.isUsed;
     synchronize = r.synchronize;
+
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+    init_numa_device_table = r.init_numa_device_table;
+    numa_devices_in_order = r.numa_devices_in_order;
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
   }
 };
 
@@ -191,5 +210,15 @@ struct TableMap {
 typedef std::map<void *, TableMap> HostPtrToTableMapTy;
 extern HostPtrToTableMapTy *HostPtrToTableMap;
 extern std::mutex *TblMapMtx;
+
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+struct NumaInfoTy {
+    __tgt_numa_info numa_info;
+    NumaInfoTy();
+};
+
+extern NumaInfoTy *NumaInfo;
+
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 
 #endif

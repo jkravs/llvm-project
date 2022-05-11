@@ -26,6 +26,11 @@ target_link_libraries(omptarget
   ${CMAKE_DL_LIBS}
   "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/exports")
 
+
+if (LIBOMP_USE_NUMA_DEVICE_AFFINITY)
+  target_link_libraries(omptarget numa)
+endif()
+
 # Install libomptarget under the lib destination folder.
 install(TARGETS omptarget LIBRARY COMPONENT omptarget
   DESTINATION "${OPENMP_INSTALL_LIBDIR}")

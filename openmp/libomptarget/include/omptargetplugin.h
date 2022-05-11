@@ -15,6 +15,9 @@
 #define _OMPTARGETPLUGIN_H_
 
 #include <omptarget.h>
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+#include "omptargetnuma.h"
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 
 #ifdef __cplusplus
 extern "C" {
@@ -132,6 +135,11 @@ int32_t __tgt_rtl_run_target_team_region_async(
 // Device synchronization. In case of success, return zero. Otherwise, return an
 // error code.
 int32_t __tgt_rtl_synchronize(int32_t ID, __tgt_async_info *AsyncInfoPtr);
+
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+int32_t __tgt_rtl_initialize_numa_device_table(__tgt_numa_info const *NumaInfoPtr);
+int32_t __tgt_rtl_get_numa_devices_in_order(int32_t NumaNodeID, int32_t const **NodeDevices);
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 
 #ifdef __cplusplus
 }

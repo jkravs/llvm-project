@@ -15,6 +15,7 @@ VERS1.0 {
     __tgt_target_teams_nowait;
     __tgt_mapper_num_components;
     __tgt_push_mapper_component;
+    omp_get_devices_in_order;
     omp_get_num_devices;
     omp_get_initial_device;
     omp_target_alloc;

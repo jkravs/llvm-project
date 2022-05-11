@@ -14,6 +14,7 @@
 #include "private.h"
 #include "rtl.h"
 
+
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -38,7 +39,17 @@ std::mutex *TrlTblMtx;
 HostPtrToTableMapTy *HostPtrToTableMap;
 std::mutex *TblMapMtx;
 
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+NumaInfoTy *NumaInfo;
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
+
 __attribute__((constructor(101))) void init() {
+#ifdef OMPTARGET_DEBUG
+  if (char *envStr = getenv("LIBOMPTARGET_DEBUG")) {
+    DebugLevel = std::stoi(envStr);
+  }
+#endif // OMPTARGET_DEBUG
+    
   DP("Init target library!\n");
   RTLs = new RTLsTy();
   RTLsMtx = new std::mutex();
@@ -46,6 +57,10 @@ __attribute__((constructor(101))) void init() {
   TrlTblMtx = new std::mutex();
   HostPtrToTableMap = new HostPtrToTableMapTy();
   TblMapMtx = new std::mutex();
+
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+  NumaInfo = new NumaInfoTy();
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 }
 
 __attribute__((destructor(101))) void deinit() {
@@ -56,6 +71,9 @@ __attribute__((destructor(101))) void deinit() {
   delete TrlTblMtx;
   delete HostPtrToTableMap;
   delete TblMapMtx;
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+  delete NumaInfo;
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 }
 
 void RTLsTy::LoadRTLs() {
@@ -146,6 +164,12 @@ void RTLsTy::LoadRTLs() {
         dlsym(dynlib_handle, "__tgt_rtl_data_exchange_async");
     *((void **)&R.is_data_exchangable) =
         dlsym(dynlib_handle, "__tgt_rtl_is_data_exchangable");
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+    *((void **)&R.numa_devices_in_order) =
+        dlsym(dynlib_handle, "__tgt_rtl_get_numa_devices_in_order");
+    *((void **)&R.init_numa_device_table) =
+        dlsym(dynlib_handle, "__tgt_rtl_initialize_numa_device_table");
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY
 
     // No devices are supported by this RTL?
     if (!(R.NumberOfDevices = R.number_of_devices())) {
@@ -303,6 +327,14 @@ void RTLsTy::RegisterLib(__tgt_bin_desc *desc) {
           // RTL local device ID
           Devices[start + device_id].RTLDeviceID = device_id;
         }
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+        if (R.init_numa_device_table != nullptr) {
+          DP("RTL supports numa device affinity!\n");
+          R.init_numa_device_table(&NumaInfo->numa_info);
+        } else {
+          DP("RTL does not support numa device affinity!\n");
+        }
+#endif
 
         // Initialize the index of this RTL and save it in the used RTLs.
         R.Idx = (UsedRTLs.empty())
@@ -314,6 +346,7 @@ void RTLsTy::RegisterLib(__tgt_bin_desc *desc) {
         UsedRTLs.push_back(&R);
 
         DP("RTL " DPxMOD " has index %d!\n", DPxPTR(R.LibraryHandler), R.Idx);
+
       }
 
       // Initialize (if necessary) translation table for this library.
@@ -439,3 +472,51 @@ void RTLsTy::UnregisterLib(__tgt_bin_desc *desc) {
 
   DP("Done unregistering library!\n");
 }
+
+
+#if OMPT_USE_NUMA_DEVICE_AFFINITY
+NumaInfoTy::NumaInfoTy() {
+ if(numa_available() != -1) {
+    numa_info.Available = 1;
+    numa_info.ConfiguredNodes = numa_num_configured_nodes();
+
+    DP("NUMA available with %d configured nodes!\n", numa_info.ConfiguredNodes);
+
+    struct index_distance {
+      int index;
+      int distance;
+    };
+    
+    DP("NUMA Distance Table Sorted:\n");
+
+    numa_info.NumaDistanceTable = (int32_t **)malloc(sizeof(int32_t *) * numa_info.ConfiguredNodes);
+    for (int i = 0; i < numa_info.ConfiguredNodes; i++) {
+      numa_info.NumaDistanceTable[i] = (int32_t *)malloc(sizeof(int32_t) * numa_info.ConfiguredNodes);
+      std::vector<index_distance> distances_with_index(numa_info.ConfiguredNodes);
+
+      std::string buffer = "NUMA node " + std::to_string(i) + ": ";
+      
+      for (int j = 0; j < numa_info.ConfiguredNodes; j++) {
+        distances_with_index[j].index = j;
+        distances_with_index[j].distance = numa_distance(i, j);
+      }
+      
+      std::sort(distances_with_index.begin(), distances_with_index.end(), 
+        [](const struct index_distance &a, const struct index_distance &b) {
+          return a.distance < b.distance;
+        }
+      );
+
+      for (int j = 0; j < numa_info.ConfiguredNodes; j++) {
+        numa_info.NumaDistanceTable[i][j] = distances_with_index[j].index;
+        buffer += std::to_string(distances_with_index[j].index) + ", ";
+      }
+      DP("%s\n", buffer.c_str());
+    }
+
+  } else {
+    numa_info.Available = 0;
+    DP("NUMA not available!\n");
+  } 
+}
+#endif // OMPT_USE_NUMA_DEVICE_AFFINITY

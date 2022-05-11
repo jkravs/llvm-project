@@ -41,5 +41,13 @@ target_link_libraries(omptarget.rtl.cuda
   ${LIBOMPTARGET_DEP_LIBELF_LIBRARIES}
   "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/../exports")
 
+if (LIBOMP_USE_NUMA_DEVICE_AFFINITY)
+  add_library(hwloc_lib SHARED IMPORTED)
+  set_target_properties(hwloc_lib PROPERTIES
+      IMPORTED_LOCATION "${LIBOMP_HWLOC_INSTALL_DIR}/lib/libhwloc.so"
+      INTERFACE_INCLUDE_DIRECTORIES "${LIBOMP_HWLOC_INSTALL_DIR}/include")
+  target_link_libraries(omptarget.rtl.cuda hwloc_lib ${CUDA_cudart_static_LIBRARY})
+endif()
+
 # Report to the parent scope that we are building a plugin for CUDA.
 set(LIBOMPTARGET_SYSTEM_TARGETS "${LIBOMPTARGET_SYSTEM_TARGETS} nvptx64-nvidia-cuda" PARENT_SCOPE)

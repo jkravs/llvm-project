@@ -19,6 +19,8 @@ VERS1.0 {
     __tgt_rtl_run_target_region;
     __tgt_rtl_run_target_region_async;
     __tgt_rtl_synchronize;
+    __tgt_rtl_initialize_numa_device_table;
+    __tgt_rtl_get_numa_devices_in_order;
   local:
     *;
 };
