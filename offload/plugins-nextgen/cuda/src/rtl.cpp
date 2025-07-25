@@ -1323,6 +1323,16 @@ Error CUDAKernelTy::launchImpl(GenericDeviceTy &GenericDevice,
                                 NumThreads[0], NumThreads[1], NumThreads[2],
                                 MaxDynCGroupMem, Stream, nullptr, Config);
 
+  void *Event = __kmpc_omp_get_event(__kmpc_global_thread_num(NULL));
+  cuLaunchHostFunc(
+    Stream,
+    [] (void *Event) {
+      DP("Fulfill event " DPxMOD "\n", DPxPTR(Event));
+      __kmpc_fulfill_event(Event);
+    },
+    Event
+  );
+  
   // Register a callback to indicate when the kernel is complete.
   if (GenericDevice.getRPCServer())
     cuLaunchHostFunc(

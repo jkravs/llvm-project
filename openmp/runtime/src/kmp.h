@@ -4125,6 +4125,7 @@ extern kmp_event_t *__kmpc_task_allow_completion_event(ident_t *loc_ref,
                                                        int gtid,
                                                        kmp_task_t *task);
 extern void __kmp_fulfill_event(kmp_event_t *event);
+extern void __kmpc_fulfill_event(kmp_event_t *event);
 
 extern void __kmp_free_task_team(kmp_info_t *thread,
                                  kmp_task_team_t *task_team);
@@ -4350,7 +4351,7 @@ KMP_EXPORT void __kmp_set_teams_thread_limit(int limit);
 KMP_EXPORT int __kmp_get_teams_thread_limit(void);
 
 /* Interface target task integration */
-KMP_EXPORT void **__kmpc_omp_get_target_async_handle_ptr(kmp_int32 gtid);
+KMP_EXPORT kmp_event_t *__kmpc_omp_get_event(kmp_int32 gtid);
 KMP_EXPORT bool __kmpc_omp_has_task_team(kmp_int32 gtid);
 
 /* Lock interface routines (fast versions with gtid passed in) */
