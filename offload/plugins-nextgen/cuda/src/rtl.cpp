@@ -605,6 +605,7 @@ struct CUDADeviceTy : public GenericDeviceTy {
 
   /// Deallocate memory on the device or related to the device.
   int free(void *TgtPtr, TargetAllocTy Kind) override {
+    DP("Free Memory\n");
     if (TgtPtr == nullptr)
       return OFFLOAD_SUCCESS;
 
@@ -643,6 +644,7 @@ struct CUDADeviceTy : public GenericDeviceTy {
 
   /// Synchronize current thread with the pending operations on the async info.
   Error synchronizeImpl(__tgt_async_info &AsyncInfo) override {
+    DP("SYNCHRONIZE\n");
     CUstream Stream = reinterpret_cast<CUstream>(AsyncInfo.Queue);
     CUresult Res;
     Res = cuStreamSynchronize(Stream);
@@ -837,6 +839,15 @@ struct CUDADeviceTy : public GenericDeviceTy {
       return Err;
 
     CUresult Res = cuMemcpyDtoHAsync(HstPtr, (CUdeviceptr)TgtPtr, Size, Stream);
+    void *Event = __kmpc_omp_get_event(__kmpc_global_thread_num(NULL));
+    cuLaunchHostFunc(
+      Stream,
+      [] (void *Event) {
+        DP("Fulfill event " DPxMOD "\n", DPxPTR(Event));
+        __kmpc_fulfill_event(Event);
+      },
+      Event
+    );
     return Plugin::check(Res, "error in cuMemcpyDtoHAsync: %s");
   }
 
@@ -1323,15 +1334,6 @@ Error CUDAKernelTy::launchImpl(GenericDeviceTy &GenericDevice,
                                 NumThreads[0], NumThreads[1], NumThreads[2],
                                 MaxDynCGroupMem, Stream, nullptr, Config);
 
-  void *Event = __kmpc_omp_get_event(__kmpc_global_thread_num(NULL));
-  cuLaunchHostFunc(
-    Stream,
-    [] (void *Event) {
-      DP("Fulfill event " DPxMOD "\n", DPxPTR(Event));
-      __kmpc_fulfill_event(Event);
-    },
-    Event
-  );
   
   // Register a callback to indicate when the kernel is complete.
   if (GenericDevice.getRPCServer())
