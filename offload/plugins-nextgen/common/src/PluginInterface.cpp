@@ -1115,7 +1115,6 @@ Error PinnedAllocationMapTy::eraseEntry(const EntryTy &Entry) {
 
 Error PinnedAllocationMapTy::registerEntryUse(const EntryTy &Entry,
                                               void *HstPtr, size_t Size) {
-  DP("Register References: %d\n", Entry.References);
   if (!contains(Entry.HstPtr, Entry.Size, HstPtr, Size))
     return Plugin::error(ErrorCode::INVALID_ARGUMENT,
                          "partial overlapping not allowed in locked buffers");
@@ -1125,7 +1124,6 @@ Error PinnedAllocationMapTy::registerEntryUse(const EntryTy &Entry,
 }
 
 Expected<bool> PinnedAllocationMapTy::unregisterEntryUse(const EntryTy &Entry) {
-  DP("Unregister References: %d\n", Entry.References);
   if (Entry.References == 0)
     return Plugin::error(ErrorCode::INVALID_ARGUMENT,
                          "invalid number of references");

@@ -605,7 +605,6 @@ struct CUDADeviceTy : public GenericDeviceTy {
 
   /// Deallocate memory on the device or related to the device.
   int free(void *TgtPtr, TargetAllocTy Kind) override {
-    DP("Free Memory\n");
     if (TgtPtr == nullptr)
       return OFFLOAD_SUCCESS;
 
@@ -644,7 +643,6 @@ struct CUDADeviceTy : public GenericDeviceTy {
 
   /// Synchronize current thread with the pending operations on the async info.
   Error synchronizeImpl(__tgt_async_info &AsyncInfo) override {
-    DP("SYNCHRONIZE\n");
     CUstream Stream = reinterpret_cast<CUstream>(AsyncInfo.Queue);
     CUresult Res;
     Res = cuStreamSynchronize(Stream);
