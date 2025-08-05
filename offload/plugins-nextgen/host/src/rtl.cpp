@@ -284,6 +284,11 @@ struct GenELF64DeviceTy : public GenericDeviceTy {
     return Plugin::success();
   }
 
+  Error fulfillEventImpl(AsyncInfoWrapperTy &AsyncInfoWrapper) override {
+    // TODO: Implement
+    return Plugin::error(ErrorCode::UNIMPLEMENTED, "Host backend does not implement event handling, yet");
+  }
+
   /// Exchange data between two devices within the plugin. This function is not
   /// supported in this plugin.
   Error dataExchangeImpl(const void *SrcPtr, GenericDeviceTy &DstGenericDevice,

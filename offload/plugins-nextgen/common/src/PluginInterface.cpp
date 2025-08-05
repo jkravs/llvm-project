@@ -433,7 +433,6 @@ void AsyncInfoWrapperTy::finalize(Error &Err) {
   // the synchronize operation.
   if (AsyncInfoPtr == &LocalAsyncInfo && LocalAsyncInfo.Queue && !Err)
     Err = Device.synchronize(&LocalAsyncInfo);
-
   // Invalidate the wrapper object.
   AsyncInfoPtr = nullptr;
 }
@@ -1564,6 +1563,14 @@ Error GenericDeviceTy::launchKernel(void *EntryPtr, void **ArgPtrs,
   return Err;
 }
 
+Error GenericDeviceTy::fulfillEvent(__tgt_async_info *AsyncInfo) {
+  AsyncInfoWrapperTy AsyncInfoWrapper(*this, AsyncInfo);
+
+  auto Err = fulfillEventImpl(AsyncInfoWrapper);
+  AsyncInfoWrapper.finalize(Err);
+  return Err;
+}
+
 Error GenericDeviceTy::initAsyncInfo(__tgt_async_info **AsyncInfoPtr) {
   assert(AsyncInfoPtr && "Invalid async info");
 
@@ -2041,6 +2048,17 @@ int32_t GenericPluginTy::launch_kernel(int32_t DeviceId, void *TgtEntryPtr,
   if (Err) {
     REPORT("Failure to run target region " DPxMOD " in device %d: %s\n",
            DPxPTR(TgtEntryPtr), DeviceId, toString(std::move(Err)).data());
+    return OFFLOAD_FAIL;
+  }
+
+  return OFFLOAD_SUCCESS;
+}
+
+int32_t GenericPluginTy::fulfill_event(int32_t DeviceId, AsyncInfoTy &AsyncInfo) {
+  auto Err = getDevice(DeviceId).fulfillEvent(AsyncInfo);
+  if (Err) {
+    REPORT("Failure to fulfill event in device %d: %s\n",
+           DeviceId, toString(std::move(Err)).data());
     return OFFLOAD_FAIL;
   }
 

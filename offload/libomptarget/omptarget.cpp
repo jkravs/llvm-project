@@ -43,6 +43,7 @@ using namespace llvm::omp::target::ompt;
 #endif
 
 int AsyncInfoTy::synchronize() {
+  DP("DEBUG: Synchronize\n");
   int Result = OFFLOAD_SUCCESS;
   if (!isQueueEmpty()) {
     switch (SyncType) {
@@ -60,8 +61,12 @@ int AsyncInfoTy::synchronize() {
   }
 
   // Run any pending post-processing function registered on this async object.
-  if (Result == OFFLOAD_SUCCESS && isQueueEmpty())
+  if (Result == OFFLOAD_SUCCESS && isQueueEmpty()) {
+    DP("DEBUG: Run Post Pocessing\n");
     Result = runPostProcessing();
+  } else {
+    DP("DEBUG: Dont't run Post Pocessing\n");
+  }
 
   return Result;
 }
@@ -625,6 +630,7 @@ int targetDataEnd(ident_t *Loc, DeviceTy &Device, int32_t ArgNum,
                   void **ArgBases, void **Args, int64_t *ArgSizes,
                   int64_t *ArgTypes, map_var_info_t *ArgNames,
                   void **ArgMappers, AsyncInfoTy &AsyncInfo, bool FromMapper) {
+  DP("DEBUG: targetDataEnd\n");
   int Ret = OFFLOAD_SUCCESS;
   auto *PostProcessingPtrs = new SmallVector<PostProcessingInfo>();
   // process each input.
@@ -1342,6 +1348,7 @@ static int processDataAfter(ident_t *Loc, int64_t DeviceId, void *HostPtr,
                             PrivateArgumentManagerTy &PrivateArgumentManager,
                             AsyncInfoTy &AsyncInfo) {
 
+  DP("DEBUG: processDataAfter\n");
   auto DeviceOrErr = PM->getDevice(DeviceId);
   if (!DeviceOrErr)
     FATAL_MESSAGE(DeviceId, "%s", toString(DeviceOrErr.takeError()).c_str());
@@ -1480,6 +1487,12 @@ int target(ident_t *Loc, DeviceTy &Device, void *HostPtr,
       REPORT("Failed to process data after launching the kernel.\n");
       return OFFLOAD_FAIL;
     }
+  }
+
+  Ret = Device.fulfillEvent(AsyncInfo);
+  if (Ret != OFFLOAD_SUCCESS) {
+    REPORT("Failed to fulfill the event.\n");
+    return OFFLOAD_FAIL;
   }
 
   return OFFLOAD_SUCCESS;

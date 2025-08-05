@@ -837,15 +837,7 @@ struct CUDADeviceTy : public GenericDeviceTy {
       return Err;
 
     CUresult Res = cuMemcpyDtoHAsync(HstPtr, (CUdeviceptr)TgtPtr, Size, Stream);
-    void *Event = __kmpc_omp_get_event(__kmpc_global_thread_num(NULL));
-    cuLaunchHostFunc(
-      Stream,
-      [] (void *Event) {
-        DP("Fulfill event " DPxMOD "\n", DPxPTR(Event));
-        __kmpc_fulfill_event(Event);
-      },
-      Event
-    );
+    
     return Plugin::check(Res, "error in cuMemcpyDtoHAsync: %s");
   }
 
@@ -865,6 +857,23 @@ struct CUDADeviceTy : public GenericDeviceTy {
       return Err;
 
     return Plugin::success();
+  }
+
+  Error fulfillEventImpl(AsyncInfoWrapperTy &AsyncInfoWrapper) override {
+    CUstream Stream;
+    if (auto Err = getStream(AsyncInfoWrapper, Stream))
+      return Err;
+
+    void *Event = __kmpc_omp_get_event(__kmpc_global_thread_num(NULL));
+    CUresult Res = cuLaunchHostFunc(
+      Stream,
+      [] (void *Event) {
+        DP("Fulfill event " DPxMOD "\n", DPxPTR(Event));
+        __kmpc_fulfill_event(Event);
+      },
+      Event
+    );
+    return Plugin::check(Res, "error in cuLaunchHostFunc: %s");
   }
 
   /// Initialize the device info for interoperability purposes.
